@@ -56,6 +56,10 @@ if (process.env.TOKEN || process.env.SLACK_TOKEN) {
     process.exit(1);
 }
 
+var apiai = require('botkit-middleware-apiai')({
+   token: process.env.APIAI_TOKEN
+});
+controller.middleware.receive.use(apiai.receive);
 
 /**
  * A demonstration for how to handle websocket events. In this case, just log when we have and have not
@@ -81,20 +85,35 @@ controller.on('rtm_close', function (bot) {
  */
 // BEGIN EDITING HERE!
 
-controller.on('bot_channel_join', function (bot, message) {
-    bot.reply(message, "I'm here!")
-});
+// controller.on('bot_channel_join', function (bot, message) {
+//     bot.reply(message, "I'm here!")
+// });
 
-controller.hears('hello', 'direct_message', function (bot, message) {
+controller.hears('Hello', ['mention', 'direct_mention','direct_message'], apiai.hears, function (bot, message) {
     bot.reply(message, 'Hello!');
 });
 
+controller.hears('how are you?', ['mention', 'direct_mention','direct_message'], apiai.hears, function (bot, message) {
+    bot.reply(message, 'I\'m well, thanks buddy!');
+});
+
+controller.hears('siri', ['mention', 'direct_mention','direct_message'], apiai.hears, function (bot, message) {
+    bot.reply(message, 'How dare you!');
+});
+
+controller.hears(['flights'], 'direct_message', apiai.hears, function (bot, message) {
+   if(message.fulfillment.speech !== '') {
+       bot.reply(message, message.fulfillment.speech);
+   } else {
+       bot.reply(message, "You requested to fly to " + message.entities['geo-city'] + " on " + message.entities['date']+".");
+   }
+});
 
 /**
  * AN example of what could be:
  * Any un-handled direct mention gets a reaction and a pat response!
  */
-//controller.on('direct_message,mention,direct_mention', function (bot, message) {
+// controller.on('direct_message,mention,direct_mention', function (bot, message) {
 //    bot.api.reactions.add({
 //        timestamp: message.ts,
 //        channel: message.channel,
@@ -105,4 +124,4 @@ controller.hears('hello', 'direct_message', function (bot, message) {
 //        }
 //        bot.reply(message, 'I heard you loud and clear boss.');
 //    });
-//});
+// });
