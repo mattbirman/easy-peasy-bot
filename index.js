@@ -101,7 +101,7 @@ controller.hears('siri', ['mention', 'direct_mention','direct_message'], apiai.h
     bot.reply(message, 'How dare you!');
 });
 
-controller.hears(['flights'], 'direct_message', apiai.hears, function (bot, message) {
+controller.hears(['flights'], ['mention', 'direct_mention','direct_message'], apiai.hears, function (bot, message) {
    if(message.fulfillment.speech !== '') {
        bot.reply(message, message.fulfillment.speech);
    } else {
